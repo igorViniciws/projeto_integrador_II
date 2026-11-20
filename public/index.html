@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AirWatch — Qualidade do Ar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-palette="#3b82f6,#22c55e,#f59e0b,#8b5cf6,#06b6d4,#f97316">
+
+<!-- Plano de fundo dinâmico baseado no clima atual -->
+<div id="weather-bg" aria-hidden="true"></div>
+<canvas id="weather-canvas" aria-hidden="true"></canvas>
+
+<!-- ═══════════════════════════════ HEADER ════════════════════════════════ -->
+<header class="site-header">
+  <div class="header-brand">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <circle cx="14" cy="14" r="13" stroke="var(--clr-blue)" stroke-width="2"/>
+      <path d="M6 14 Q10 8 14 14 Q18 20 22 14" stroke="var(--clr-blue)" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="14" cy="14" r="2.5" fill="var(--clr-blue)"/>
+    </svg>
+    <span class="brand-name">AirWatch</span>
+    <span class="brand-sub">Qualidade do Ar Interno</span>
+  </div>
+
+  <div class="header-meta">
+    <span class="room-badge">Sala 09 / Sala 10</span>
+    <div class="connection-pill" id="conn-pill">
+      <span class="conn-dot"></span>
+      <span id="conn-label">Conectando…</span>
+    </div>
+    <span class="last-update" id="last-update">—</span>
+    <button class="theme-toggle" id="theme-toggle" title="Alternar tema" aria-label="Alternar tema claro/escuro">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/>
+        <line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/>
+        <line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main class="dashboard-grid">
+
+  <!-- ═══════════════════════ FAIXA 1 — KPI CARDS ══════════════════════ -->
+  <section class="kpi-row" aria-label="Leituras atuais">
+
+    <article class="kpi-card" id="kpi-temperature" data-var="temperature">
+      <div class="kpi-top">
+        <span class="kpi-label">Temperatura</span>
+        <span class="kpi-status-badge" aria-label="status">—</span>
+      </div>
+      <div class="kpi-value-row">
+        <span class="kpi-value">—</span>
+        <span class="kpi-unit">°C</span>
+      </div>
+      <div class="kpi-range">Normal: 18 – 26 °C</div>
+    </article>
+
+    <article class="kpi-card" id="kpi-humidity" data-var="humidity">
+      <div class="kpi-top">
+        <span class="kpi-label">Umidade</span>
+        <span class="kpi-status-badge">—</span>
+      </div>
+      <div class="kpi-value-row">
+        <span class="kpi-value">—</span>
+        <span class="kpi-unit">%</span>
+      </div>
+      <div class="kpi-range">Normal: 40 – 70 %</div>
+    </article>
+
+    <article class="kpi-card" id="kpi-CO2" data-var="CO2">
+      <div class="kpi-top">
+        <span class="kpi-label">CO₂</span>
+        <span class="kpi-status-badge">—</span>
+      </div>
+      <div class="kpi-value-row">
+        <span class="kpi-value">—</span>
+        <span class="kpi-unit">ppm</span>
+      </div>
+      <div class="kpi-range">Normal: &lt; 1000 ppm</div>
+    </article>
+
+    <article class="kpi-card" id="kpi-pressure" data-var="pressure">
+      <div class="kpi-top">
+        <span class="kpi-label">Pressão</span>
+        <span class="kpi-status-badge">—</span>
+      </div>
+      <div class="kpi-value-row">
+        <span class="kpi-value">—</span>
+        <span class="kpi-unit">hPa</span>
+      </div>
+      <div class="kpi-range">Normal: 950 – 1050 hPa</div>
+    </article>
+
+    <article class="kpi-card" id="kpi-particula1" data-var="particula1">
+      <div class="kpi-top">
+        <span class="kpi-label">PM2.5</span>
+        <span class="kpi-status-badge">—</span>
+      </div>
+      <div class="kpi-value-row">
+        <span class="kpi-value">—</span>
+        <span class="kpi-unit">µg/m³</span>
+      </div>
+      <div class="kpi-range">Normal: &lt; 25 µg/m³</div>
+    </article>
+
+    <article class="kpi-card" id="kpi-particula2" data-var="particula2">
+      <div class="kpi-top">
+        <span class="kpi-label">PM10</span>
+        <span class="kpi-status-badge">—</span>
+      </div>
+      <div class="kpi-value-row">
+        <span class="kpi-value">—</span>
+        <span class="kpi-unit">µg/m³</span>
+      </div>
+      <div class="kpi-range">Normal: &lt; 50 µg/m³</div>
+    </article>
+
+  </section>
+
+  <!-- ═══════════════════════ FAIXA 2 — HISTÓRICO + ALERTAS ATIVOS ═════ -->
+  <section class="row-2" aria-label="Histórico e alertas ativos">
+
+    <!-- Gráfico histórico -->
+    <div class="panel panel-history">
+      <div class="panel-header">
+        <h2 class="panel-title">Histórico — últimas 24 h</h2>
+        <div class="chart-filters" role="group" aria-label="Selecionar variável">
+          <button class="filter-btn active" data-metric="temperature">Temp.</button>
+          <button class="filter-btn" data-metric="humidity">Umidade</button>
+          <button class="filter-btn" data-metric="CO2">CO₂</button>
+          <button class="filter-btn" data-metric="pressure">Pressão</button>
+          <button class="filter-btn" data-metric="particula1">PM2.5</button>
+          <button class="filter-btn" data-metric="particula2">PM10</button>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chart-history" role="img" aria-label="Gráfico histórico da variável selecionada"></canvas>
+      </div>
+      <div class="chart-table-wrap visually-hidden" id="history-table-wrap" aria-live="polite">
+        <table id="history-table" class="data-table">
+          <thead><tr><th>Hora</th><th id="th-metric">Valor</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <button class="table-toggle" id="toggle-history-table" aria-expanded="false" aria-controls="history-table-wrap">
+        Ver dados em tabela
+      </button>
+    </div>
+
+    <!-- Alertas ativos -->
+    <div class="panel panel-active-alerts">
+      <div class="panel-header">
+        <h2 class="panel-title">Alertas Ativos</h2>
+        <span class="badge-count" id="active-count">0</span>
+      </div>
+      <ul class="alert-list" id="active-alerts" aria-live="polite" aria-label="Lista de alertas ativos">
+        <li class="alert-empty">Nenhum alerta ativo</li>
+      </ul>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════ FAIXA 3 — COMPARATIVO + HISTÓRICO ALERTAS ═ -->
+  <section class="row-3" aria-label="Comparativo externo e histórico de alertas">
+
+    <!-- Comparativo interno vs externo -->
+    <div class="panel panel-compare">
+      <div class="panel-header">
+        <h2 class="panel-title">Interno vs Externo</h2>
+        <span class="panel-sub">Dados externos: Open-Meteo</span>
+      </div>
+      <div class="chart-wrap chart-wrap-sm">
+        <canvas id="chart-compare" role="img" aria-label="Gráfico comparativo interno vs externo"></canvas>
+      </div>
+    </div>
+
+    <!-- Histórico de alertas -->
+    <div class="panel panel-alert-history">
+      <div class="panel-header">
+        <h2 class="panel-title">Histórico de Alertas</h2>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="alert-history-table" aria-label="Histórico de alertas">
+          <thead>
+            <tr>
+              <th>Início</th>
+              <th>Severidade</th>
+              <th>Duração</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="alert-history-body">
+            <tr><td colspan="4" class="empty-row">Carregando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- ════════════════════════════════ FOOTER ══════════════════════════════ -->
+<footer class="site-footer">
+  <span>Dados climáticos externos fornecidos por
+    <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
+    (CC BY 4.0)
+  </span>
+  <span>Projeto Integrador · UniSENAI · São Caetano do Sul · 2026</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+        integrity="sha512-ZwR1/gSZM3ai6vCdI+LVF1zSq/5HznD3oD+sCoJrzXJ+yKzoTOwnzbxkPn5M1tMmkithnj60HkPehR85ci+NQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
